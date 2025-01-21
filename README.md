@@ -33,7 +33,9 @@
 │   │   └── vars
 │   │       └── main.yml
 │   └── zsh_setup
-└── id_rsa.pub
+├── id_rsa.pub
+└── secrets
+    └── bob_ssh_key.pub
 ```
 
 ---
@@ -52,13 +54,6 @@
      - name: admins
 
    users:
-     - name: "bob"
-       shell: "/bin/bash"
-       state: "present"
-       groups: ["sudo"]
-       password: "bob_password"
-       ssh_key_path: /secrets/bob_ssh_key.pub
-
      - name: "felix"
        shell: "/bin/zsh"
        state: "present"
@@ -73,11 +68,11 @@
        state: "absent"
 
      - name: "nikita"
-       shell: "/bin/zsh"
+       shell: "/bin/sh"
        state: "present"
        groups: ["developers"]
        password: "nikita_password"
-       ssh_key_path: /secrets/bob_ssh_key.pub
+       ssh_key_path: /secrets/nikita_ssh_key.pub
    ```
 
 3. **Сохраните пароли в зашифрованном файле:**
@@ -121,7 +116,7 @@
          ansible_host: 127.0.0.1
          ansible_port: 2222
          ansible_user: ubuntu
-         ansible_ssh_private_key_file: ./id_rsa
+         ansible_ssh_private_key_file: ./path_to_your_private_ssh_key
    ```
 
 5. **Создайте папку `secrets`:**
