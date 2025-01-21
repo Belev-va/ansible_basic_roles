@@ -1,0 +1,39 @@
+---
+# tasks file for ssh_config
+- name: Backup current sshd_config
+  copy:
+    src: /etc/ssh/sshd_config
+    dest: /etc/ssh/sshd_config.bak
+    remote_src: yes
+
+- name: Configure SSH to disable root login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    state: present
+  notify: Restart SSH
+
+- name: Configure SSH to disable empty passwords
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitEmptyPasswords'
+    line: 'PermitEmptyPasswords no'
+    state: present
+  notify: Restart SSH
+
+- name: Set SSH log level to VERBOSE
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^LogLevel'
+    line: 'LogLevel VERBOSE'
+    state: present
+  notify: Restart SSH
+
+- name: Disable X11 forwarding in SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^X11Forwarding'
+    line: 'X11Forwarding no'
+    state: present
+  notify: Restart SSH

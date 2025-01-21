@@ -1,0 +1,16 @@
+---
+# handlers file for roles/nginx_setup
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
+  become: true
+  when: ansible_service_mgr == "systemd"
+
+- name: Restart nginx
+  command: nginx -g 'daemon off;'
+  become: true
+  async: 0
+  poll: 0
+  when: ansible_virtualization_type == "docker"

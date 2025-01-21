@@ -1,0 +1,31 @@
+---
+- name: Add/remove users
+  user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    password: "{{ lookup('vars', item.password) | password_hash('sha512') if item.state != 'absent' else omit }}"
+    state: "{{ item.state | default('present') }}"
+    groups: "{{ item.groups | default([]) | join(',') }}"
+  loop: "{{ users }}"
+  when:
+    - item.state is defined
+
+- name: Ensure user home directory exists
+  file:
+    path: "/home/{{ item.name }}"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0755'
+  loop: "{{ users }}"
+  become: true
+  when: item.state != 'absent'
+
+- name: Add public SSH keys to authorized_keys
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', playbook_dir ~ '/' ~ item.ssh_key_path) }}"
+    state: "present"
+  loop: "{{ users }}"
+  when:
+    - item.ssh_key_path is defined

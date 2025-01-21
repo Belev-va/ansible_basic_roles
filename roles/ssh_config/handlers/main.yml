@@ -1,0 +1,16 @@
+---
+# handlers file for ssh_config
+
+- name: Restart SSH
+  service:
+    name: ssh
+    state: restarted
+  become: true
+  when: ansible_service_mgr == "systemd"
+
+- name: Restart SSH
+  command: /usr/sbin/sshd -D
+  become: true
+  async: 0
+  poll: 0
+  when: ansible_virtualization_type == "docker"

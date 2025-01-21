@@ -1,0 +1,26 @@
+---
+# tasks file for roles/deploy_static
+- name: Download static archive
+  ansible.builtin.get_url:
+    url: "{{ static_archive_url }}"
+    dest: "/tmp/static.zip"
+    mode: "0644"
+
+- name: Ensure /var/www/html/images exists
+  ansible.builtin.file:
+    path: "/var/www/html/images"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+- name: Unarchive static files
+  ansible.builtin.unarchive:
+    src: "/tmp/static.zip"
+    dest: "/var/www/html/images/"
+    remote_src: yes
+    owner: www-data
+    group: www-data
+    mode: "0755"
+    extra_opts: ["-o"]
+

@@ -1,0 +1,30 @@
+---
+- name: Ensure home directory structure exists for zsh users
+  ansible.builtin.file:
+    path: "/home/{{ item.name }}/.oh-my-zsh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0755'
+  when:
+    - item.shell is defined
+    - item.shell == "/bin/zsh"
+    - item.state == "present"
+  loop: "{{ users }}"
+  become: true
+
+- name: Install Oh My Zsh for users with zsh shell
+  ansible.builtin.shell: |
+    if [ ! -d "/home/{{ item.name }}/.oh-my-zsh" ]; then
+      sudo -u {{ item.name }} HOME=/home/{{ item.name }} RUNZSH=no bash -c 'curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash'
+    fi
+  args:
+    executable: /bin/bash
+  when:
+    - item.shell is defined
+    - item.shell == "/bin/zsh"
+    - item.state == "present"
+  loop: "{{ users }}"
+  become: true
+  environment:
+    HOME: "/home/{{ item.name }}"

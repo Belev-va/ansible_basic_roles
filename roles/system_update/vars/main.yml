@@ -1,0 +1,7 @@
+---
+packages:
+  - htop
+  - git
+  - nano
+  - tree
+  - unzip

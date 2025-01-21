@@ -1,0 +1,11 @@
+---
+# tasks file for roles/system_update
+- name: Update system packages
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: dist
+
+- name: Install additional utilities
+  ansible.builtin.package:
+    name: "{{ packages }}"
+    state: present

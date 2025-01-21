@@ -1,0 +1,31 @@
+custom_groups:
+  - name: developers
+  - name: admins
+
+users:
+  - name: "bob"
+    shell: "/bin/bash"
+    state: "present"
+    groups: ["sudo"]
+    password: "felix_password"
+    ssh_key_path: /secrets/bob_ssh_key.pub
+
+  - name: "felix"
+    shell: "/bin/zsh"
+    state: "present"
+    groups: ["developers", "sudo"]
+    password: "felix_password"
+    ssh_key_path: /secrets/bob_ssh_key.pub
+
+  - name: "habib"
+    state: "absent"
+
+  - name: "hannah"
+    state: "absent"
+
+  - name: "nikita"
+    shell: "/bin/zsh"
+    state: "present"
+    groups: ["developers"]
+    password: "felix_password"
+    ssh_key_path: /secrets/bob_ssh_key.pub

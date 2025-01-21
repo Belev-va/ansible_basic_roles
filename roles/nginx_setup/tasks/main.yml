@@ -1,0 +1,52 @@
+---
+# tasks file for roles/nginx_setup
+
+- name: Ensure nginx is installed
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Configure nginx
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: Restart nginx
+
+- name: Ensure required directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /var/run/nginx
+    - /var/log/nginx
+  when: ansible_virtualization_type == "docker"
+
+- name: Check if port 80 is in use (Docker)
+  ansible.builtin.shell: |
+    ss -tuln | grep ':80 ' || true
+  register: port_80_check_docker
+  changed_when: false
+
+- name: Kill processes using port 80 (Docker)
+  ansible.builtin.shell: |
+    ss -tuln | awk '/:80 / {print $6}' | cut -d',' -f2 | while read pid; do
+      if [ -n "$pid" ] && [[ "$pid" =~ ^[0-9]+$ ]]; then
+        kill -9 $pid
+      fi
+    done
+  become: true
+  when: port_80_check_docker.stdout != ""
+  changed_when: true
+
+- name: Ensure nginx is started (Systemd)
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  when: ansible_virtualization_type != "docker"
+
+- name: Ensure nginx is started (Docker)
+  ansible.builtin.shell: |
+    nohup nginx -g 'daemon off;' &
+  when: ansible_virtualization_type == "docker"
