@@ -1,2 +1,2 @@
 ---
-# vars file for zabbix
+zabbix_server_db_password: "{{ vault_zabbix_server_db_password }}"

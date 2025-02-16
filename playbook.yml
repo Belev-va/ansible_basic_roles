@@ -4,6 +4,7 @@
   vars_files:
     - inventory/group_vars/all/vault.yml
     - roles/user_management/vars/main.yml
+    -
   become: true
   roles:
     - user_management
@@ -12,3 +13,4 @@
     - system_update
     - nginx_setup
     - deploy_static
+    - zabbix

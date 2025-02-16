@@ -1,2 +1,6 @@
 ---
-# defaults file for zabbix
+zabbix_version: "6.0"
+zabbix_repo_url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/"
+zabbix_server_db_user: "zabbix"
+zabbix_server_db_name: "zabbix"
+

@@ -1,2 +1,73 @@
 ---
-# tasks file for zabbix
+- name: Update system and install dependencies
+  apt:
+    update_cache: yes
+    upgrade: dist
+    name:
+      - gnupg
+      - curl
+      - mariadb-server
+      - mariadb-client
+      - php
+      - php-mysql
+      - apache2
+    state: present
+
+- name: Add Zabbix repository
+  shell: |
+    wget -qO- https://repo.zabbix.com/zabbix-official-repo.key | gpg --dearmor > /usr/share/keyrings/zabbix-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/zabbix-keyring.gpg] {{ zabbix_repo_url }} $(lsb_release -sc) main" > /etc/apt/sources.list.d/zabbix.list
+  args:
+    executable: /bin/bash
+
+- name: Install Zabbix server, frontend, and agent
+  apt:
+    name:
+      - zabbix-server-mysql
+      - zabbix-frontend-php
+      - zabbix-apache-conf
+      - zabbix-agent
+    state: present
+    update_cache: yes
+
+- name: Ensure MariaDB is running
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Create Zabbix database
+  mysql_db:
+    name: "{{ zabbix_server_db_name }}"
+    state: present
+
+- name: Create Zabbix user
+  mysql_user:
+    name: "{{ zabbix_server_db_user }}"
+    password: "{{ zabbix_server_db_password }}"
+    priv: "{{ zabbix_server_db_name }}.*:ALL"
+    host: "localhost"
+    state: present
+
+- name: Import Zabbix database schema
+  command: >
+    mysql -u{{ zabbix_server_db_user }} -p{{ zabbix_server_db_password }} {{ zabbix_server_db_name }}
+    < /usr/share/doc/zabbix-server-mysql/create.sql.gz
+  args:
+    warn: false
+
+- name: Configure Zabbix server
+  template:
+    src: templates/zabbix_server.conf.j2
+    dest: /etc/zabbix/zabbix_server.conf
+  notify: Restart Zabbix Server
+
+- name: Restart all services
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+  loop:
+    - zabbix-server
+    - zabbix-agent
+    - apache2
